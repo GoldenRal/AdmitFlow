@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admission Process Automation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Global Styles & Variables */
+        :root {
+            --font-primary: 'Poppins', sans-serif;
+            --font-secondary: 'Inter', sans-serif;
+
+            /* Light Mode Colors */
+            --bg-color-light: #f4f7f9;
+            --card-bg-color-light: #ffffff;
+            --text-color-light: #333333;
+            --primary-color-light: #007bff; /* Blue */
+            --secondary-color-light: #6c757d; /* Gray */
+            --accent-color-light: #28a745; /* Green */
+            --error-color-light: #dc3545; /* Red */
+            --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --border-color-light: #e0e0e0;
+
+            /* Dark Mode Colors */
+            --bg-color-dark: #1a1a2e;
+            --card-bg-color-dark: #242b42;
+            --text-color-dark: #e0e0e0;
+            --primary-color-dark: #3d8bfd; /* Lighter Blue */
+            --secondary-color-dark: #8c96a5; /* Lighter Gray */
+            --accent-color-dark: #32cd32; /* Lime Green */
+            --error-color-dark: #ff4d4f; /* Lighter Red */
+            --shadow-dark: 0 6px 15px rgba(0, 0, 0, 0.2);
+            --border-color-dark: #404860;
+        }
+
+        body {
+            font-family: var(--font-secondary);
+            margin: 0;
+            background-color: var(--bg-color-light);
+            color: var(--text-color-light);
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body.dark-mode {
+            background-color: var(--bg-color-dark);
+            color: var(--text-color-dark);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color-light);
+        }
+        body.dark-mode .app-header {
+            border-bottom-color: var(--border-color-dark);
+        }
+        .app-header h1 {
+            font-family: var(--font-primary);
+            font-size: 2em;
+            color: var(--primary-color-light);
+            margin: 0;
+        }
+        body.dark-mode .app-header h1 {
+            color: var(--primary-color-dark);
+        }
+
+        /* Theme Toggle */
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+        }
+        .theme-switch {
+            display: inline-block;
+            height: 24px;
+            position: relative;
+            width: 50px;
+            margin-left: 10px;
+        }
+        .theme-switch input {
+            display:none;
+        }
+        .slider {
+            background-color: #ccc;
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            background-color: #fff;
+            bottom: 4px;
+            content: "";
+            height: 16px;
+            left: 4px;
+            position: absolute;
+            transition: .4s;
+            width: 16px;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color-light);
+        }
+        body.dark-mode input:checked + .slider {
+            background-color: var(--primary-color-dark);
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background-color: var(--card-bg-color-light);
+            border-radius: 8px;
+            box-shadow: var(--shadow-light);
+            padding: 10px;
+            overflow-x: auto; /* For smaller screens */
+        }
+        body.dark-mode .tabs {
+            background-color: var(--card-bg-color-dark);
+            box-shadow: var(--shadow-dark);
+        }
+        .tab-link {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background-color: transparent;
+            font-family: var(--font-primary);
+            font-size: 1em;
+            font-weight: 500;
+            color: var(--secondary-color-light);
+            transition: color 0.3s ease, border-bottom 0.3s ease;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+        body.dark-mode .tab-link {
+            color: var(--secondary-color-dark);
+        }
+        .tab-link.active, .tab-link:hover {
+            color: var(--primary-color-light);
+            border-bottom: 3px solid var(--primary-color-light);
+        }
+        body.dark-mode .tab-link.active, body.dark-mode .tab-link:hover {
+            color: var(--primary-color-dark);
+            border-bottom-color: var(--primary-color-dark);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background-color: var(--card-bg-color-light);
+            border-radius: 8px;
+            box-shadow: var(--shadow-light);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        body.dark-mode .tab-content {
+            background-color: var(--card-bg-color-dark);
+            box-shadow: var(--shadow-dark);
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Card-based layout for content within tabs */
+        .content-section h2 {
+            font-family: var(--font-primary);
+            color: var(--primary-color-light);
+            margin-top: 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--accent-color-light);
+            padding-bottom: 10px;
+        }
+        body.dark-mode .content-section h2 {
+            color: var(--primary-color-dark);
+            border-bottom-color: var(--accent-color-dark);
+        }
+        
+        /* Form Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 10px;
+            border: 1px solid var(--border-color-light);
+            border-radius: 4px;
+            font-size: 1em;
+            background-color: var(--bg-color-light);
+            color: var(--text-color-light);
+        }
+        body.dark-mode .form-group input,
+        body.dark-mode .form-group select,
+        body.dark-mode .form-group textarea {
+            background-color: var(--bg-color-dark); /* Slightly different from card for contrast */
+            color: var(--text-color-dark);
+            border-color: var(--border-color-dark);
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color-light);
+            box-shadow: 0 0 0 2px var(--primary-color-light_a30); /* Light blue glow */
+        }
+        body.dark-mode .form-group input:focus,
+        body.dark-mode .form-group select:focus,
+        body.dark-mode .form-group textarea:focus {
+            border-color: var(--primary-color-dark);
+            box-shadow: 0 0 0 2px var(--primary-color-dark_a30);
+        }
+        .error-message {
+            color: var(--error-color-light);
+            font-size: 0.875em;
+            margin-top: 4px;
+        }
+        body.dark-mode .error-message {
+            color: var(--error-color-dark);
+        }
+        input.invalid {
+            border-color: var(--error-color-light) !important;
+        }
+        body.dark-mode input.invalid {
+            border-color: var(--error-color-dark) !important;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-right: 10px; /* Spacing for multiple buttons */
+        }
+        .btn-primary {
+            background-color: var(--primary-color-light);
+            color: white;
+        }
+        body.dark-mode .btn-primary {
+            background-color: var(--primary-color-dark);
+        }
+        .btn-primary:hover {
+            background-color: #0056b3; /* Darker Blue */
+            transform: translateY(-2px);
+        }
+        body.dark-mode .btn-primary:hover {
+            background-color: #2a70d0; /* Lighter, slightly darker than primary-dark */
+        }
+        .btn-secondary {
+            background-color: var(--secondary-color-light);
+            color: white;
+        }
+        body.dark-mode .btn-secondary {
+            background-color: var(--secondary-color-dark);
+        }
+        .btn-secondary:hover {
+            background-color: #545b62; /* Darker Gray */
+            transform: translateY(-2px);
+        }
+        body.dark-mode .btn-secondary:hover {
+            background-color: #707883;
+        }
+        .btn-accent {
+            background-color: var(--accent-color-light);
+            color: white;
+        }
+        body.dark-mode .btn-accent {
+            background-color: var(--accent-color-dark);
+        }
+        .btn-accent:hover {
+            background-color: #1e7e34; /* Darker Green */
+            transform: translateY(-2px);
+        }
+        body.dark-mode .btn-accent:hover {
+            background-color: #28a428;
+        }
+        .form-actions {
+            margin-top: 20px;
+            text-align: right;
+        }
+
+        /* Table Styles */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: var(--shadow-light);
+        }
+        body.dark-mode .data-table {
+            box-shadow: var(--shadow-dark);
+        }
+        .data-table th, .data-table td {
+            padding: 12px 15px;
+            border: 1px solid var(--border-color-light);
+            text-align: left;
+        }
+        body.dark-mode .data-table th, body.dark-mode .data-table td {
+            border-color: var(--border-color-dark);
+        }
+        .data-table th {
+            background-color: var(--primary-color-light_a10); /* Light primary shade */
+            font-family: var(--font-primary);
+            font-weight: 600;
+            color: var(--primary-color-light);
+        }
+        body.dark-mode .data-table th {
+            background-color: var(--primary-color-dark_a20);
+            color: var(--primary-color-dark);
+        }
+        .data-table tbody tr:nth-child(even) {
+            background-color: var(--bg-color-light);
+        }
+        body.dark-mode .data-table tbody tr:nth-child(even) {
+            background-color: var(--bg-color-dark); /* Slightly different from card bg for rows */
+        }
+        .data-table tbody tr:hover {
+            background-color: var(--primary-color-light_a05);
+        }
+        body.dark-mode .data-table tbody tr:hover {
+            background-color: var(--primary-color-dark_a10);
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+
+        /* Admin Filter Styles */
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: var(--bg-color-light); /* Slightly different */
+            border-radius: 6px;
+        }
+        body.dark-mode .filters {
+            background-color: var(--bg-color-dark); /* Slightly different */
+        }
+        .filters input, .filters select {
+            padding: 8px;
+            border: 1px solid var(--border-color-light);
+            border-radius: 4px;
+            background-color: var(--card-bg-color-light); /* Match card for inputs */
+            color: var(--text-color-light);
+        }
+        body.dark-mode .filters input, body.dark-mode .filters select {
+            background-color: var(--card-bg-color-dark);
+            color: var(--text-color-dark);
+            border-color: var(--border-color-dark);
+        }
+
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .app-header h1 {
+                font-size: 1.5em;
+            }
+            .tabs {
+                flex-direction: column; /* Stack tabs on small screens */
+                align-items: stretch; /* Make tabs full width */
+            }
+            .tab-link {
+                text-align: center; /* Center text */
+                border-bottom: 1px solid var(--border-color-light); /* Separator for stacked tabs */
+            }
+            body.dark-mode .tab-link {
+                border-bottom: 1px solid var(--border-color-dark);
+            }
+            .tab-link.active, .tab-link:hover {
+                border-bottom: 3px solid var(--primary-color-light); /* Keep active indicator */
+            }
+            body.dark-mode .tab-link.active, body.dark-mode .tab-link:hover {
+                border-bottom-color: var(--primary-color-dark);
+            }
+            .form-grid {
+                grid-template-columns: 1fr; /* Single column for forms */
+            }
+            .filters {
+                 grid-template-columns: 1fr;
+            }
+        }
+
+        /* Helper class for screen readers */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Photo preview */
+        #photoPreview {
+            max-width: 150px;
+            max-height: 150px;
+            margin-top: 10px;
+            border: 1px solid var(--border-color-light);
+            border-radius: 4px;
+            display: none; /* Hidden initially */
+        }
+        body.dark-mode #photoPreview {
+            border-color: var(--border-color-dark);
+        }
+
+        /* Utility classes */
+        .text-center { text-align: center; }
+        .mt-20 { margin-top: 20px; }
+        .mb-20 { margin-bottom: 20px; }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="app-header">
+            <h1>Admission Portal</h1>
+            <div class="theme-switch-wrapper">
+                <span id="theme-icon">☀️</span> <!-- Sun icon for light, Moon for dark -->
+                <label class="theme-switch" for="themeToggle">
+                    <input type="checkbox" id="themeToggle">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-link active" onclick="openTab(event, 'admissionFormTab')">Admission Form</button>
+            <button class="tab-link" onclick="openTab(event, 'meritListTab')">Merit List</button>
+            <button class="tab-link" onclick="openTab(event, 'interviewScheduleTab')">Interview Schedule</button>
+            <button class="tab-link" onclick="openTab(event, 'adminSectionTab')">Admin Dashboard</button>
+        </nav>
+
+        <!-- Admission Form Section -->
+        <div id="admissionFormTab" class="tab-content active">
+            <section class="content-section">
+                <h2>Applicant Details</h2>
+                <form id="admissionForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="fullName">Full Name *</label>
+                            <input type="text" id="fullName" name="fullName" required>
+                            <span class="error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" name="email" required>
+                            <span class="error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number *</label>
+                            <input type="tel" id="phone" name="phone" required>
+                            <span class="error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="dob">Date of Birth *</label>
+                            <input type="date" id="dob" name="dob" required>
+                            <span class="error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="gender">Gender *</label>
+                            <select id="gender" name="gender" required>
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <span class="error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="address">Address *</label>
+                            <textarea id="address" name="address" rows="3" required></textarea>
+                            <span class="error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="classAppliedFor">Class Applied For *</label>
+                            <input type="text" id="classAppliedFor" name="classAppliedFor" required>
+                            <span class="error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="previousMarks">Marks in Previous Exam (%) *</label>
+                            <input type="number" id="previousMarks" name="previousMarks" min="0" max="100" step="0.01" required>
+                            <span class="error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="category">Category *</label>
+                            <select id="category" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="General">General</option>
+                                <option value="OBC">OBC</option>
+                                <option value="SC">SC</option>
+                                <option value="ST">ST</option>
+                            </select>
+                            <span class="error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="photo">Upload Photo (Optional)</label>
+                            <input type="file" id="photo" name="photo" accept="image/*">
+                            <img id="photoPreview" src="#" alt="Photo Preview">
+                            <span class="error-message"></span>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Submit Application</button>
+                    </div>
+                </form>
+                <div id="formStatus" class="mt-20"></div>
+            </section>
+        </div>
+
+        <!-- Merit List Section -->
+        <div id="meritListTab" class="tab-content">
+            <section class="content-section">
+                <h2>Merit List</h2>
+                <button id="generateMeritListBtn" class="btn btn-accent mb-20">Generate/Refresh Merit List</button>
+                <button id="downloadMeritListBtn" class="btn btn-secondary mb-20">Download Merit List (CSV)</button>
+                <div class="table-container">
+                    <table id="meritListTable" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Full Name</th>
+                                <th>Marks (%)</th>
+                                <th>Category</th>
+                                <th>Selected Under</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Merit list rows will be inserted here by JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <p id="meritListMessage" class="mt-20"></p>
+            </section>
+        </div>
+
+        <!-- Interview Schedule Section -->
+        <div id="interviewScheduleTab" class="tab-content">
+            <section class="content-section">
+                <h2>Interview Schedule</h2>
+                <p>Interview slots are assigned automatically after successful form submission. Interviews are scheduled Monday to Friday, 9 AM to 5 PM, in 30-minute intervals.</p>
+                <button id="downloadScheduleBtn" class="btn btn-secondary mb-20">Download Schedule (TXT)</button>
+                <div class="table-container">
+                    <table id="interviewScheduleTable" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Applicant Name</th>
+                                <th>Email</th>
+                                <th>Interview Date</th>
+                                <th>Interview Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Interview schedule rows will be inserted here by JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <p id="interviewScheduleMessage" class="mt-20"></p>
+            </section>
+        </div>
+
+        <!-- Admin Section -->
+        <div id="adminSectionTab" class="tab-content">
+            <section class="content-section">
+                <h2>Admin Dashboard - All Applicants</h2>
+                <div class="filters">
+                    <input type="text" id="adminSearchName" placeholder="Search by Name...">
+                    <select id="adminFilterClass">
+                        <option value="">Filter by Class (All)</option>
+                        <!-- Class options will be populated by JS -->
+                    </select>
+                    <select id="adminFilterCategory">
+                        <option value="">Filter by Category (All)</option>
+                        <option value="General">General</option>
+                        <option value="OBC">OBC</option>
+                        <option value="SC">SC</option>
+                        <option value="ST">ST</option>
+                    </select>
+                    <input type="number" id="adminFilterMinMarks" placeholder="Min Marks">
+                    <input type="number" id="adminFilterMaxMarks" placeholder="Max Marks">
+                </div>
+                <button id="adminExportAllBtn" class="btn btn-accent mb-20">Export All Data (CSV)</button>
+                <div class="table-container">
+                    <table id="allApplicantsTable" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>DOB</th>
+                                <th>Gender</th>
+                                <th>Class Applied</th>
+                                <th>Marks (%)</th>
+                                <th>Category</th>
+                                <th>Submitted On</th>
+                                <!-- Add more columns as needed -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- All applicant rows will be inserted here by JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <p id="adminSectionMessage" class="mt-20"></p>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        // --- Application State and Core Logic ---
+        let applicants = [];
+        let interviewSlotManager = {
+            // Start interviews from next Monday
+            startDate: getNextMonday(new Date()),
+            slotsPerDay: 16, // 9 AM to 5 PM (8 hours), 2 slots per hour = 16 slots
+            timeSlots: [], // e.g., ["09:00", "09:30", ..., "16:30"]
+            nextAvailableSlotIndex: 0,
+            nextAvailableDate: null,
+
+            init: function() {
+                this.timeSlots = [];
+                for (let hour = 9; hour < 17; hour++) {
+                    this.timeSlots.push(`${String(hour).padStart(2, '0')}:00`);
+                    this.timeSlots.push(`${String(hour).padStart(2, '0')}:30`);
+                }
+                this.nextAvailableDate = new Date(this.startDate);
+                // Adjust if startDate is Sat/Sun (though getNextMonday should handle this)
+                this.ensureWeekday();
+            },
+
+            ensureWeekday: function() {
+                let day = this.nextAvailableDate.getDay();
+                if (day === 0) { // Sunday
+                    this.nextAvailableDate.setDate(this.nextAvailableDate.getDate() + 1); // Move to Monday
+                } else if (day === 6) { // Saturday
+                    this.nextAvailableDate.setDate(this.nextAvailableDate.getDate() + 2); // Move to Monday
+                }
+            },
+            
+            getNextSlot: function() {
+                if (this.nextAvailableSlotIndex >= this.slotsPerDay) {
+                    this.nextAvailableSlotIndex = 0;
+                    this.nextAvailableDate.setDate(this.nextAvailableDate.getDate() + 1);
+                    this.ensureWeekday();
+                }
+                
+                const date = new Date(this.nextAvailableDate);
+                const time = this.timeSlots[this.nextAvailableSlotIndex];
+                
+                this.nextAvailableSlotIndex++;
+                
+                return { date: formatDate(date), time: time };
+            }
+        };
+
+        // --- DOMContentLoaded: Initialize App ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadApplicants(); // Load from LocalStorage
+            interviewSlotManager.init();
+            setupEventListeners();
+            renderAllApplicantsTable(); // Initial render for admin tab
+            renderInterviewScheduleTable(); // Initial render for schedule tab
+            updateAdminFilterOptions();
+            // Set initial theme based on LocalStorage or system preference
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('themeToggle').checked = true;
+                document.getElementById('theme-icon').textContent = '🌙';
+            } else {
+                 document.getElementById('theme-icon').textContent = '☀️';
+            }
+        });
+
+        // --- Theme Toggle ---
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('change', () => {
+            document.body.classList.toggle('dark-mode');
+            const themeIcon = document.getElementById('theme-icon');
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+                themeIcon.textContent = '🌙';
+            } else {
+                localStorage.setItem('theme', 'light');
+                themeIcon.textContent = '☀️';
+            }
+        });
+
+        // --- Tab Navigation ---
+        function openTab(event, tabName) {
+            let i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tab-link");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            event.currentTarget.className += " active";
+        }
+
+        // --- Event Listeners Setup ---
+        function setupEventListeners() {
+            // Admission Form
+            const admissionForm = document.getElementById('admissionForm');
+            admissionForm.addEventListener('submit', handleFormSubmit);
+            ['fullName', 'email', 'phone', 'dob', 'gender', 'address', 'classAppliedFor', 'previousMarks', 'category'].forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.addEventListener('blur', (e) => validateField(e.target));
+                    input.addEventListener('input', (e) => clearError(e.target));
+                }
+            });
+            document.getElementById('photo').addEventListener('change', handlePhotoPreview);
+
+            // Merit List
+            document.getElementById('generateMeritListBtn').addEventListener('click', renderMeritListTable);
+            document.getElementById('downloadMeritListBtn').addEventListener('click', downloadMeritList);
+            
+            // Interview Schedule
+            document.getElementById('downloadScheduleBtn').addEventListener('click', downloadInterviewSchedule);
+
+            // Admin Section
+            document.getElementById('adminSearchName').addEventListener('input', renderAllApplicantsTable);
+            document.getElementById('adminFilterClass').addEventListener('change', renderAllApplicantsTable);
+            document.getElementById('adminFilterCategory').addEventListener('change', renderAllApplicantsTable);
+            document.getElementById('adminFilterMinMarks').addEventListener('input', renderAllApplicantsTable);
+            document.getElementById('adminFilterMaxMarks').addEventListener('input', renderAllApplicantsTable);
+            document.getElementById('adminExportAllBtn').addEventListener('click', exportAllApplicantsData);
+        }
+
+        // --- Admission Form Logic ---
+        function handlePhotoPreview(event) {
+            const preview = document.getElementById('photoPreview');
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onloadend = function () {
+                preview.src = reader.result;
+                preview.style.display = 'block';
+            }
+
+            if (file) {
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = '#';
+                preview.style.display = 'none';
+            }
+        }
+
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formStatus = document.getElementById('formStatus');
+            formStatus.textContent = ''; // Clear previous messages
+
+            if (!validateForm(form)) {
+                formStatus.textContent = 'Please correct the errors in the form.';
+                formStatus.style.color = getComputedStyle(document.documentElement).getPropertyValue(document.body.classList.contains('dark-mode') ? '--error-color-dark' : '--error-color-light');
+                return;
+            }
+
+            const formData = new FormData(form);
+            const applicantData = {};
+            formData.forEach((value, key) => {
+                applicantData[key] = value;
+            });
+
+            // Handle photo data
+            const photoFile = document.getElementById('photo').files[0];
+            if (photoFile) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    applicantData.photo = reader.result; // Store as Base64 Data URL
+                    addApplicant(applicantData, form, formStatus);
+                };
+                reader.readAsDataURL(photoFile);
+            } else {
+                applicantData.photo = null;
+                addApplicant(applicantData, form, formStatus);
+            }
+        }
+        
+        function addApplicant(applicantData, form, formStatus) {
+            applicantData.id = 'APP-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+            applicantData.submissionDate = new Date().toISOString();
+            applicantData.previousMarks = parseFloat(applicantData.previousMarks);
+
+            // Assign interview slot
+            const slot = interviewSlotManager.getNextSlot();
+            applicantData.interviewDate = slot.date;
+            applicantData.interviewTime = slot.time;
+
+            applicants.push(applicantData);
+            saveApplicants();
+
+            formStatus.textContent = `Application submitted successfully! Your Applicant ID is ${applicantData.id}. Interview scheduled for ${applicantData.interviewDate} at ${applicantData.interviewTime}.`;
+            formStatus.style.color = getComputedStyle(document.documentElement).getPropertyValue(document.body.classList.contains('dark-mode') ? '--accent-color-dark' : '--accent-color-light');
+            form.reset();
+            document.getElementById('photoPreview').style.display = 'none'; // Hide preview
+
+            // Refresh relevant tables/views
+            renderAllApplicantsTable();
+            renderInterviewScheduleTable();
+            updateAdminFilterOptions();
+        }
+
+
+        // --- Validation Logic ---
+        function validateForm(form) {
+            let isValid = true;
+            const inputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+            inputs.forEach(input => {
+                if (!validateField(input)) {
+                    isValid = false;
+                }
+            });
+            // Specific validations beyond 'required'
+            if (!validateEmail(document.getElementById('email'))) isValid = false;
+            if (!validatePhone(document.getElementById('phone'))) isValid = false;
+            if (!validateMarks(document.getElementById('previousMarks'))) isValid = false;
+            // Add other specific validations if needed
+            return isValid;
+        }
+
+        function validateField(field) {
+            const errorSpan = field.parentElement.querySelector('.error-message');
+            let isValid = true;
+            clearError(field); // Clear previous error state
+
+            if (field.hasAttribute('required') && !field.value.trim()) {
+                showError(field, errorSpan, `${field.labels[0].textContent.replace('*','').trim()} is required.`);
+                isValid = false;
+            } else {
+                 // More specific validations
+                if (field.type === 'email' && !validateEmail(field)) isValid = false;
+                if (field.id === 'phone' && !validatePhone(field)) isValid = false;
+                if (field.id === 'previousMarks' && !validateMarks(field)) isValid = false;
+            }
+            return isValid;
+        }
+        
+        function validateEmail(field) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const errorSpan = field.parentElement.querySelector('.error-message');
+            if (field.value.trim() && !emailRegex.test(field.value.trim())) {
+                showError(field, errorSpan, 'Invalid email format.');
+                return false;
+            }
+            return true;
+        }
+
+        function validatePhone(field) {
+            const phoneRegex = /^\d{10,}$/; // Simple: 10 or more digits
+            const errorSpan = field.parentElement.querySelector('.error-message');
+            if (field.value.trim() && !phoneRegex.test(field.value.trim())) {
+                showError(field, errorSpan, 'Phone number must be at least 10 digits.');
+                return false;
+            }
+            return true;
+        }
+
+        function validateMarks(field) {
+            const marks = parseFloat(field.value);
+            const errorSpan = field.parentElement.querySelector('.error-message');
+            if (field.value.trim() && (isNaN(marks) || marks < 0 || marks > 100)) {
+                showError(field, errorSpan, 'Marks must be a number between 0 and 100.');
+                return false;
+            }
+            return true;
+        }
+
+        function showError(field, errorSpan, message) {
+            field.classList.add('invalid');
+            if (errorSpan) errorSpan.textContent = message;
+        }
+
+        function clearError(field) {
+            field.classList.remove('invalid');
+            const errorSpan = field.parentElement.querySelector('.error-message');
+            if (errorSpan) errorSpan.textContent = '';
+        }
+
+        // --- Merit List Logic ---
+        function generateMeritListData() {
+            if (applicants.length === 0) return [];
+
+            let meritList = [];
+            let candidatesPool = JSON.parse(JSON.stringify(applicants)); // Deep copy
+
+            const totalApplicants = applicants.length;
+            const quotas = {
+                'ST': Math.floor(totalApplicants * 0.08),
+                'SC': Math.floor(totalApplicants * 0.15),
+                'OBC': Math.floor(totalApplicants * 0.27),
+            };
+            quotas['General'] = totalApplicants - (quotas.ST + quotas.SC + quotas.OBC);
+
+
+            // Fill reserved quotas
+            ['ST', 'SC', 'OBC'].forEach(category => {
+                let categoryApplicants = candidatesPool
+                    .filter(a => a.category === category)
+                    .sort((a, b) => b.previousMarks - a.previousMarks);
+                
+                let numToSelect = Math.min(categoryApplicants.length, quotas[category]);
+                let selected = categoryApplicants.slice(0, numToSelect);
+                
+                selected.forEach(s => {
+                    s.selectedUnderCategory = category;
+                    meritList.push(s);
+                    // Remove from pool
+                    candidatesPool = candidatesPool.filter(c => c.id !== s.id);
+                });
+            });
+
+            // Fill General quota from remaining applicants
+            candidatesPool.sort((a, b) => b.previousMarks - a.previousMarks); // Sort all remaining by marks
+            let numGeneralToSelect = Math.min(candidatesPool.length, quotas['General']);
+            let generalSelected = candidatesPool.slice(0, numGeneralToSelect);
+
+            generalSelected.forEach(s => {
+                s.selectedUnderCategory = 'General'; // Could be original General or other category selected on merit
+                meritList.push(s);
+            });
+            
+            // Final sort by marks
+            meritList.sort((a, b) => b.previousMarks - a.previousMarks);
+            return meritList;
+        }
+        
+        function renderMeritListTable() {
+            const tableBody = document.getElementById('meritListTable').getElementsByTagName('tbody')[0];
+            const messageP = document.getElementById('meritListMessage');
+            tableBody.innerHTML = ''; // Clear existing rows
+            messageP.textContent = '';
+
+            const meritListData = generateMeritListData();
+
+            if (meritListData.length === 0) {
+                messageP.textContent = 'No applicants available to generate merit list, or no applicants selected.';
+                return;
+            }
+
+            meritListData.forEach((applicant, index) => {
+                let row = tableBody.insertRow();
+                row.insertCell().textContent = index + 1; // Rank
+                row.insertCell().textContent = applicant.fullName;
+                row.insertCell().textContent = applicant.previousMarks.toFixed(2);
+                row.insertCell().textContent = applicant.category;
+                row.insertCell().textContent = applicant.selectedUnderCategory;
+            });
+        }
+
+        function downloadMeritList() {
+            const meritListData = generateMeritListData();
+            if (meritListData.length === 0) {
+                alert('No merit list data to download.');
+                return;
+            }
+            const dataForCSV = meritListData.map((app, index) => ({
+                Rank: index + 1,
+                FullName: app.fullName,
+                Marks: app.previousMarks.toFixed(2),
+                OriginalCategory: app.category,
+                SelectedUnderCategory: app.selectedUnderCategory,
+                Email: app.email // Added email for contact
+            }));
+            downloadCSV(convertToCSV(dataForCSV), 'merit_list.csv');
+        }
+
+        // --- Interview Schedule Logic ---
+        function renderInterviewScheduleTable() {
+            const tableBody = document.getElementById('interviewScheduleTable').getElementsByTagName('tbody')[0];
+            const messageP = document.getElementById('interviewScheduleMessage');
+            tableBody.innerHTML = '';
+            messageP.textContent = '';
+
+            const scheduledApplicants = applicants.filter(a => a.interviewDate && a.interviewTime)
+                                              .sort((a,b) => new Date(a.interviewDate + ' ' + a.interviewTime) - new Date(b.interviewDate + ' ' + b.interviewTime));
+
+            if (scheduledApplicants.length === 0) {
+                messageP.textContent = 'No interviews scheduled yet.';
+                return;
+            }
+
+            scheduledApplicants.forEach(applicant => {
+                let row = tableBody.insertRow();
+                row.insertCell().textContent = applicant.fullName;
+                row.insertCell().textContent = applicant.email;
+                row.insertCell().textContent = applicant.interviewDate;
+                row.insertCell().textContent = applicant.interviewTime;
+            });
+        }
+
+        function downloadInterviewSchedule() {
+            const scheduledApplicants = applicants.filter(a => a.interviewDate && a.interviewTime)
+                                             .sort((a,b) => new Date(a.interviewDate + ' ' + a.interviewTime) - new Date(b.interviewDate + ' ' + b.interviewTime));
+            if (scheduledApplicants.length === 0) {
+                alert('No interview schedule to download.');
+                return;
+            }
+            let textContent = "Interview Schedule\n\n";
+            textContent += "Applicant Name\tEmail\tInterview Date\tInterview Time\n";
+            textContent += "---------------------------------------------------------------------\n";
+            scheduledApplicants.forEach(app => {
+                textContent += `${app.fullName}\t${app.email}\t${app.interviewDate}\t${app.interviewTime}\n`;
+            });
+            downloadTextFile(textContent, 'interview_schedule.txt');
+        }
+        
+        // --- Admin Section Logic ---
+        function renderAllApplicantsTable() {
+            const tableBody = document.getElementById('allApplicantsTable').getElementsByTagName('tbody')[0];
+            const messageP = document.getElementById('adminSectionMessage');
+            tableBody.innerHTML = '';
+            messageP.textContent = '';
+
+            // Get filter values
+            const searchTerm = document.getElementById('adminSearchName').value.toLowerCase();
+            const filterClass = document.getElementById('adminFilterClass').value;
+            const filterCategory = document.getElementById('adminFilterCategory').value;
+            const minMarks = parseFloat(document.getElementById('adminFilterMinMarks').value) || 0;
+            const maxMarks = parseFloat(document.getElementById('adminFilterMaxMarks').value) || 100;
+
+            const filteredApplicants = applicants.filter(app => {
+                const nameMatch = app.fullName.toLowerCase().includes(searchTerm);
+                const classMatch = !filterClass || app.classAppliedFor === filterClass;
+                const categoryMatch = !filterCategory || app.category === filterCategory;
+                const marksMatch = app.previousMarks >= minMarks && app.previousMarks <= maxMarks;
+                return nameMatch && classMatch && categoryMatch && marksMatch;
+            });
+
+
+            if (filteredApplicants.length === 0) {
+                messageP.textContent = 'No applicants found matching criteria, or no applicants yet.';
+                return;
+            }
+
+            filteredApplicants.sort((a,b) => new Date(b.submissionDate) - new Date(a.submissionDate)); // Sort by submission date, newest first
+
+            filteredApplicants.forEach(applicant => {
+                let row = tableBody.insertRow();
+                row.insertCell().textContent = applicant.id;
+                row.insertCell().textContent = applicant.fullName;
+                row.insertCell().textContent = applicant.email;
+                row.insertCell().textContent = applicant.phone;
+                row.insertCell().textContent = applicant.dob;
+                row.insertCell().textContent = applicant.gender;
+                row.insertCell().textContent = applicant.classAppliedFor;
+                row.insertCell().textContent = applicant.previousMarks.toFixed(2);
+                row.insertCell().textContent = applicant.category;
+                row.insertCell().textContent = new Date(applicant.submissionDate).toLocaleDateString();
+            });
+        }
+
+        function updateAdminFilterOptions() {
+            // Update class filter dropdown
+            const classFilterSelect = document.getElementById('adminFilterClass');
+            const existingClasses = new Set(Array.from(classFilterSelect.options).map(opt => opt.value));
+            
+            applicants.forEach(app => {
+                if (app.classAppliedFor && !existingClasses.has(app.classAppliedFor)) {
+                    const option = document.createElement('option');
+                    option.value = app.classAppliedFor;
+                    option.textContent = app.classAppliedFor;
+                    classFilterSelect.appendChild(option);
+                    existingClasses.add(app.classAppliedFor);
+                }
+            });
+        }
+        
+        function exportAllApplicantsData() {
+            if (applicants.length === 0) {
+                alert('No applicant data to export.');
+                return;
+            }
+            // Create a clean version for export, excluding photo data for CSV size
+            const exportData = applicants.map(app => {
+                const { photo, ...rest } = app; // Exclude photo
+                return rest;
+            });
+            downloadCSV(convertToCSV(exportData), 'all_applicants_data.csv');
+        }
+
+
+        // --- Data Persistence (LocalStorage) ---
+        function saveApplicants() {
+            localStorage.setItem('admissionApplicants', JSON.stringify(applicants));
+            // Save interview manager state related to applicants
+            localStorage.setItem('interviewManagerNextSlotIndex', interviewSlotManager.nextAvailableSlotIndex);
+            localStorage.setItem('interviewManagerNextDate', interviewSlotManager.nextAvailableDate.toISOString());
+        }
+
+        function loadApplicants() {
+            const storedApplicants = localStorage.getItem('admissionApplicants');
+            if (storedApplicants) {
+                applicants = JSON.parse(storedApplicants);
+            }
+            // Load interview manager state
+            const storedSlotIndex = localStorage.getItem('interviewManagerNextSlotIndex');
+            const storedNextDate = localStorage.getItem('interviewManagerNextDate');
+            if (storedSlotIndex !== null) {
+                 interviewSlotManager.nextAvailableSlotIndex = parseInt(storedSlotIndex, 10);
+            }
+            if (storedNextDate) {
+                 interviewSlotManager.nextAvailableDate = new Date(storedNextDate);
+            } else { // If no stored date, re-init based on current applicants (to avoid re-assigning old slots)
+                if (applicants.length > 0) {
+                   // Find the latest assigned interview date and continue from there
+                   let latestInterviewEnd = interviewSlotManager.startDate;
+                   applicants.forEach(app => {
+                       if (app.interviewDate && app.interviewTime) {
+                           const appInterviewDateTime = new Date(`${app.interviewDate} ${app.interviewTime}`);
+                           if(appInterviewDateTime > latestInterviewEnd) latestInterviewEnd = appInterviewDateTime;
+                       }
+                   });
+                   // Set manager to start after the latest known slot
+                   interviewSlotManager.nextAvailableDate = new Date(latestInterviewEnd);
+                   // This logic might need refinement to accurately pick up where it left off.
+                   // For now, if loaded, we continue from stored date or re-calculate based on applicants.
+                   // To be truly robust, the state of 'interviewSlotManager' needs to be fully restored or re-derived.
+                   // The current simple approach might re-use slots if app is closed and reopened much later.
+                   // A simpler robust approach: on load, find max interview date assigned, set next slot after that.
+                   let maxDate = new Date(0);
+                   applicants.forEach(a => {
+                        if(a.interviewDate && a.interviewTime) {
+                            const iDate = new Date(a.interviewDate + " " + a.interviewTime);
+                            if (iDate > maxDate) maxDate = iDate;
+                        }
+                   });
+                   if (maxDate > new Date(0)) {
+                       interviewSlotManager.nextAvailableDate = new Date(maxDate);
+                       interviewSlotManager.nextAvailableSlotIndex = interviewSlotManager.timeSlots.indexOf(maxDate.toTimeString().substring(0,5)) + 1;
+                       if(interviewSlotManager.nextAvailableSlotIndex >= interviewSlotManager.slotsPerDay || interviewSlotManager.nextAvailableSlotIndex === 0) { // if last slot of day or not found
+                            interviewSlotManager.nextAvailableSlotIndex = 0;
+                            interviewSlotManager.nextAvailableDate.setDate(interviewSlotManager.nextAvailableDate.getDate() + 1);
+                       }
+                       interviewSlotManager.ensureWeekday();
+                   } else {
+                        interviewSlotManager.init(); // Fallback to default init
+                   }
+                } else {
+                    interviewSlotManager.init(); // No applicants, fresh start
+                }
+            }
+        }
+
+        // --- Utility Functions ---
+        function convertToCSV(arr) {
+            if (!arr || arr.length === 0) return "";
+            const array = [Object.keys(arr[0])].concat(arr);
+            return array.map(row => {
+                return Object.values(row).map(value => {
+                    if (typeof value === 'string') {
+                        // Escape quotes and handle commas
+                        let strVal = value.replace(/"/g, '""');
+                        if (strVal.includes(',')) strVal = `"${strVal}"`;
+                        return strVal;
+                    }
+                    return value;
+                }).toString();
+            }).join('\n');
+        }
+
+        function downloadCSV(csvContent, filename) {
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        function downloadTextFile(content, filename) {
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' });
+            const link = document.createElement("a");
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }
+        }
+        
+        function getNextMonday(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+            const nextMonday = new Date(d.setDate(diff));
+            if (nextMonday < date) { // If calculated Monday is in the past (e.g. today is Tuesday, it gives yesterday)
+                nextMonday.setDate(nextMonday.getDate() + 7);
+            }
+            return nextMonday;
+        }
+
+        function formatDate(dateObj) {
+            // Returns YYYY-MM-DD format
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+    </script>
+</body>
+</html>
